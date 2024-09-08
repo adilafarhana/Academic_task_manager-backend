@@ -37,6 +37,33 @@ app.post("/signup",async(req,res)=>{
     (error)=>{}
     )
 })
+app.post("/signin",async(req,res)=>{
+    let input=req.body
+    let result=userModel.find({ email:req.body.email}).then(
+        (items)=>{
+            if (items.length>0) {
+                const passwordvalidator=bcrypt.compareSync(req.body.password,items[0].password)
+                if (passwordvalidator) {
+                    jwt.sign({email:req.body.email},"taskapp",{expiresIn:"1d"},
+                    (error,token)=>{
+                   if (error) {
+                    res.json({"status":"error","error":error})
+                   } 
+                   else {
+                    res.json({"status":"success","token":token,"userid":items[0]._id})
+                   }
+                    })
+                } else {
+                    res.json({"status":"invalid password"})
+                    
+                }
+            } else {
+                res.json({"status":"invalid email"})
+                
+            }
+        }
+    ).catch()
+})
          
        
         app.listen(3050,()=>{
